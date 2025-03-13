@@ -1,6 +1,6 @@
 """
 title: Add Prefix to last assistant message
-author: ico
+author: Vincent Wong
 author_url: https://github.com/vincentchwong
 version: 0.1
 """
@@ -12,9 +12,8 @@ from open_webui.utils.misc import get_last_user_message, get_last_assistant_mess
 
 class Filter:
     class Valves(BaseModel):
-        prefix: str = Field(
-            default="[Prefix]", description="prefix to last assistant message."
-        )
+        prefix: str = Field(default="", description="prefix to last assistant message.")
+        suffix: str = Field(default="", description="suffix to last assistant message.")
         pass
 
     class UserValves(BaseModel):
@@ -42,7 +41,9 @@ class Filter:
         # print(f"outlet:body:{body}")
         # print(f"outlet:user:{__user__}")
 
-        print(f"*** patch last assistant message with prefix:{self.valves.prefix}")
+        print(
+            f"*** patch last assistant message with prefix:{self.valves.prefix} and suffix:{self.valves.suffix}"
+        )
 
         messages = body["messages"]
         assistant_message = get_last_assistant_message(messages)
@@ -52,7 +53,9 @@ class Filter:
 
             for message in reversed(messages):
                 if message["role"] == "assistant":
-                    message["content"] = self.valves.prefix + assistant_message
+                    message["content"] = (
+                        self.valves.prefix + assistant_message + self.valves.suffix
+                    )
                     break
 
         body = {**body, "messages": messages}
